@@ -1,0 +1,129 @@
+name: MT CI
+
+# 日常：PR 与手动触发跑「mtci」——跑单测 + 构建 debug 与 release；
+# push 到 main 只构建，单测已在 PR 通过，避免合并后再重复一遍。
+# 发布：只由「手动触发 + 勾选 publish」走 publish job，
+# 用 environment 的签名 secret 出正式包并建 Release。
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '发布版本号（如 1.0）'
+        default: '1.0'
+      versionCode:
+        description: 'versionCode（留空则用 run number）'
+      publish:
+        description: '签名 release 并创建 tag 与 GitHub Release'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    # 此名称是 main 分支保护的必需检查 context，勿改。
+    name: mtci
+    # 手动发布（dispatch + publish）时跳过：该 commit 合入 main 前已经过本 job，
+    # 发布只需 publish job；避免重复跑一遍单测+构建。
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.publish) }}
+    # 同一 PR 连续 push 时取消上一次未完成的 run，省掉过时构建的时间。
+    concurrency:
+      group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      # runner 已预装 Android SDK。刻意不用 android-actions/setup-android@v3：它会去装
+      # 已从 SDK 仓库移除的 legacy `tools` 包，直接以 exit 1 失败。这里只接受 license，
+      # 缺的 android-37.0 由 AGP 按 android.builder.sdkDownload 自动下载。
+      - name: 准备 Android SDK
+        run: |
+          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          SDKMGR="$(ls "$SDK"/cmdline-tools/*/bin/sdkmanager | sort -V | tail -1)"
+          yes | "$SDKMGR" --licenses > /dev/null 2>&1 || true
+          echo "sdkmanager=$SDKMGR"
+      # 腾讯镜像对海外 runner 不稳定，会 Connection reset；仓库里保留镜像给国内本地用。
+      - name: 切换 Gradle 发行源为官方
+        run: sed -i 's|mirrors\.cloud\.tencent\.com/gradle|services.gradle.org/distributions|' gradle/wrapper/gradle-wrapper.properties
+      - uses: gradle/actions/setup-gradle@v4
+      - name: 单元测试
+        # 合并到 main 的 push 跳过单测：PR 上已跑过，树内容一致，避免重复。
+        if: ${{ github.event_name != 'push' }}
+        run: ./gradlew :app:testDebugUnitTest --console=plain
+      # release 在此无签名文件，AGP 自动回退未签名，仅用于验证 release 构建链路能过。
+      - name: 构建 debug + release
+        run: ./gradlew :app:assembleDebug :app:assembleRelease --console=plain
+      - uses: actions/upload-artifact@v4
+        with:
+          name: debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+
+  publish:
+    name: mtci-publish
+    # 仅手动触发且勾了 publish；environment 带 required reviewer，即使有人改了 workflow，
+    # 没有你手动批准也取不到签名 secret。
+    if: github.event_name == 'workflow_dispatch' && inputs.publish
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: 准备 Android SDK
+        run: |
+          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          SDKMGR="$(ls "$SDK"/cmdline-tools/*/bin/sdkmanager | sort -V | tail -1)"
+          yes | "$SDKMGR" --licenses > /dev/null 2>&1 || true
+          echo "sdkmanager=$SDKMGR"
+      - name: 切换 Gradle 发行源为官方
+        run: sed -i 's|mirrors\.cloud\.tencent\.com/gradle|services.gradle.org/distributions|' gradle/wrapper/gradle-wrapper.properties
+      - uses: gradle/actions/setup-gradle@v4
+      - name: 校验版本号非空
+        run: test -n "${{ inputs.version }}" || { echo "::error::publish 需要填 version"; exit 1; }
+      - name: 还原签名文件
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        # 只写文件、不产生输出：公开仓库的 Actions 日志人人可见，绝不 echo 密钥。
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > release.keystore
+          printf 'storeFile=release.keystore\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
+            "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > keystore.properties
+      - name: 构建签名 release
+        run: |
+          ./gradlew :app:assembleRelease --console=plain \
+            -Pmt.versionName="${{ inputs.version }}" \
+            -Pmt.versionCode="${{ inputs.versionCode || github.run_number }}"
+      # 没法靠文件名判断是否已签名，改用 apksigner 真验签。
+      - name: 确认确实已签名
+        run: |
+          APKSIGNER="$(ls "$ANDROID_SDK_ROOT"/build-tools/*/apksigner | sort -V | tail -1)"
+          for f in app/build/outputs/apk/release/*.apk; do
+            echo "验证 $f"
+            "$APKSIGNER" verify --print-certs "$f"
+          done
+      - name: 创建 tag 与 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.version }}
+          name: v${{ inputs.version }}
+          generate_release_notes: true
+          files: app/build/outputs/apk/release/*.apk
