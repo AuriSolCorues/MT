@@ -1,17 +1,17 @@
+# 所有隐藏文件/目录一律不入库：IDE 配置（.idea）、工具缓存（.gradle/.kotlin）、
+# 本机状态（local.properties、.DS_Store）、以及任何 . 开头的杂项。
+.*
+# 例外：仓库自身必需的隐藏文件。
+!/.gitignore
+!*/.gitignore
+!/.github/
+
+# 构建产物
+build/
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
 /captures
-.externalNativeBuild
-.cxx
+
+# 本机配置
 local.properties
 
 # Signing credentials (keep these out of version control)
