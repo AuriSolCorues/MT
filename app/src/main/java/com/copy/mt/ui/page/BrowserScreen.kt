@@ -97,7 +97,7 @@ fun BrowserScreen(
     active: Side = Side.LEFT,
     onActivate: (Side) -> Unit = {},
     onUp: (Side) -> Unit = {},
-    onOpenPath: (String) -> Unit = {},
+    onOpenPath: (Side, String) -> Unit = { _, _ -> },
     onOpenSettings: () -> Unit = {},
     onItemClick: (Side, FileItem) -> Unit = { _, _ -> },
     onSync: () -> Unit = {},
@@ -114,6 +114,8 @@ fun BrowserScreen(
     var newEntryOpen by remember { mutableStateOf(false) }
     var multi by remember { mutableStateOf(false) }
     var sel by remember { mutableStateOf(setOf<String>()) }   // key = path + name
+    // 是否显示隐藏文件（以 . 开头的条目）；默认显示，点击 ⋮ 菜单「隐藏文件」可切换
+    var showHidden by remember { mutableStateOf(true) }
 
     val activePane = if (active == Side.LEFT) left else right
     fun rows(p: PaneState) = p.items
@@ -187,7 +189,7 @@ fun BrowserScreen(
                     onItemClick = { side, item ->
                         if (item.name == "..") { onUp(side); return@FilePane }
                         if (multi) { toggleSel(side, item); return@FilePane }
-                        if (item.isDir) onOpenPath(item.path) else openWithStub(item)
+                        if (item.isDir) onOpenPath(side, item.path) else openWithStub(item)
                     },
                     onIconTap = { side, item ->
                         // 点图标 = 进多选并选中该项
@@ -197,6 +199,7 @@ fun BrowserScreen(
                         sel = sel + k
                     },
                     onRefresh = onRefresh,
+                    showHidden = showHidden,
                     onUp = onUp,
                     onLongPress = { side, item ->
                         panelSide = side; panelItem = item
@@ -218,7 +221,7 @@ fun BrowserScreen(
                     onItemClick = { side, item ->
                         if (item.name == "..") { onUp(side); return@FilePane }
                         if (multi) { toggleSel(side, item); return@FilePane }
-                        if (item.isDir) onOpenPath(item.path) else openWithStub(item)
+                        if (item.isDir) onOpenPath(side, item.path) else openWithStub(item)
                     },
                     onIconTap = { side, item ->
                         multi = true
@@ -234,6 +237,7 @@ fun BrowserScreen(
                         sel = sel + selKey(side, item)
                     },
                     onRefresh = onRefresh,
+                    showHidden = showHidden,
                     epoch = right.items.hashCode(),
                 )
             }
@@ -271,7 +275,7 @@ fun BrowserScreen(
         DrawerPanel(
             visible = drawerOpen,
             onDismiss = { drawerOpen = false },
-            onNavigate = { path -> drawerOpen = false; onOpenPath(path) },
+            onNavigate = { path -> drawerOpen = false; onOpenPath(active, path) },
             onDayNight = { /* 主题切换入口，后续接设置 */ },
             onMore = { drawerOpen = false; menuOpen = true },
             onTool = { name ->
@@ -283,7 +287,9 @@ fun BrowserScreen(
         // ⋮ 菜单
         MenuPopup(
             visible = menuOpen,
-            items = DefaultMenuItems(),
+            items = DefaultMenuItems().map {
+                it.copy(label = if (it.id == "hidden") it.label + (if (showHidden) " ✓" else "") else it.label)
+            },
             onDismiss = { menuOpen = false },
             onAction = { item ->
                 menuOpen = false
@@ -291,6 +297,7 @@ fun BrowserScreen(
                     "settings" -> onOpenSettings()
                     "refresh" -> { /* 刷新走 VM，后续接 */ }
                     "swap" -> onActivate(if (active == Side.LEFT) Side.RIGHT else Side.LEFT)
+                    "hidden" -> showHidden = !showHidden
                 }
             },
         )
@@ -373,6 +380,7 @@ private fun FilePane(
     onSwipeSelect: (Side, FileItem) -> Unit,
     onRefresh: (Side) -> Unit,
     epoch: Int,
+    showHidden: Boolean,
 ) {
     val c = LocalMtColors.current
     val listState = rememberLazyListState()
@@ -384,6 +392,7 @@ private fun FilePane(
                 if (scrolling && index != lastIndex) { lastIndex = index; onActivate(side) }
             }
     }
+    val displayItems = if (showHidden) pane.items else pane.items.filter { it.name == ".." || !it.name.startsWith('.') }
     Box(modifier.background(c.surface)) {
         WaterDropRefresh(
             isLeftToRight = dirIsLeftToRight,
@@ -397,7 +406,7 @@ private fun FilePane(
             modifier = Modifier.fillMaxSize(),
         ) {
             LazyColumn(Modifier.fillMaxSize(), state = listState) {
-                itemsIndexed(pane.items, key = { _, it -> it.path + it.name }) { index, item ->
+                itemsIndexed(displayItems, key = { _, it -> it.path + it.name }) { index, item ->
                     val key = item.path + item.name
                     val selected = key in sel
                     CascadeItem(epoch = epoch, index = index) {

@@ -109,7 +109,7 @@ class MainActivity : ComponentActivity() {
                                 onUp = vm::up,
                                 onSync = vm::sync,
                                 onRefresh = vm::refresh,
-                                onOpenPath = { path -> vm.open(ui.active, path) },
+                                onOpenPath = { side, path -> vm.open(side, path) },
                                 onOpenSettings = { page = Route.Settings },
                                 onItemClick = { side, item ->
                                     if (item.name == "..") vm.up(side)
