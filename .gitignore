@@ -14,6 +14,9 @@ build/
 # 本机配置
 local.properties
 
+# 本地设计稿（不入库）
+README*.md
+
 # Signing credentials (keep these out of version control)
 *.jks
 *.keystore
