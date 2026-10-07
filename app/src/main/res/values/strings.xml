@@ -1,3 +1,165 @@
 <resources>
-    <string name="app_name">MT</string>
+    <string name="app_name">MTM</string>
+
+    <!-- 通用 -->
+    <string name="common_ok">确定</string>
+    <string name="common_cancel">取消</string>
+    <string name="common_save">保存</string>
+    <string name="common_delete">删除</string>
+    <string name="common_close">关闭</string>
+    <string name="common_hide">隐藏</string>
+    <string name="common_show">显示</string>
+    <string name="common_back">‹ 返回</string>
+
+    <!-- 抽屉 -->
+    <string name="drawer_subtitle">未登录 · 交互原型 2.6.9</string>
+    <string name="group_storage">存储</string>
+    <string name="group_bookmarks">标签（书签）</string>
+    <string name="group_tools">工具</string>
+    <string name="storage_root">根目录</string>
+    <string name="storage_internal">内部存储</string>
+    <string name="storage_usage">%1$s 已用 , %2$s 可用</string>
+    <string name="tool_trash">回收站</string>
+    <string name="tool_plugins">插件管理</string>
+    <string name="tool_apps">已安装应用</string>
+    <string name="tool_editor">文本编辑器</string>
+    <string name="tool_more">更多工具</string>
+
+    <!-- ⋮ 菜单 -->
+    <string name="menu_refresh">刷新</string>
+    <string name="menu_search">搜索</string>
+    <string name="menu_filter">过滤</string>
+    <string name="menu_sort">排序方式</string>
+    <string name="menu_terminal">打开终端</string>
+    <string name="menu_hidden">隐藏文件</string>
+    <string name="menu_bookmark">添加书签</string>
+    <string name="menu_set_home">设为首页</string>
+    <string name="menu_swap">交换窗口</string>
+    <string name="menu_settings">设置</string>
+    <string name="menu_exit">退出</string>
+    <string name="press_again_to_exit">再点一次退出</string>
+
+    <!-- 长按面板 -->
+    <string name="panel_copy">复制 -&gt;</string>
+    <string name="panel_move">移动 -&gt;</string>
+    <string name="panel_delete">删除</string>
+    <string name="panel_rename">重命名</string>
+    <string name="panel_tools">工具</string>
+    <string name="panel_zip">压缩</string>
+    <string name="panel_props">属性</string>
+    <string name="panel_share">分享</string>
+    <string name="panel_open_with">打开方式…</string>
+    <string name="panel_bookmark">添加书签</string>
+    <string name="panel_tip">带 → 的菜单可长按触发单窗口操作</string>
+
+    <!-- 已安装应用页 -->
+    <string name="apps_title">已安装应用</string>
+    <string name="apps_tab_user">用户应用</string>
+    <string name="apps_tab_system">系统应用</string>
+    <string name="apps_selected">已选: %1$d</string>
+    <string name="apps_extract">提取</string>
+    <string name="apps_uninstall">卸载</string>
+    <string name="apps_share">分享</string>
+    <string name="apps_props">属性</string>
+    <string name="apps_empty">没有匹配的应用</string>
+    <string name="menu_sort_by">排序方式</string>
+    <string name="menu_select_all">全选</string>
+
+    <!-- 主界面 -->
+    <string name="browser_stat">文件夹: %1$d  文件: %2$d</string>
+    <string name="cd_menu">菜单</string>
+    <string name="cd_more">更多</string>
+
+    <!-- 权限 -->
+    <string name="perm_title">需要「所有文件访问」权限</string>
+    <string name="perm_desc">MTM 需要访问存储才能管理文件。请在系统设置中授予全部文件访问权限。</string>
+    <string name="perm_grant">去授权</string>
+
+    <!-- 设置 -->
+    <string name="settings_title">设置</string>
+    <string name="grp_startup">启动</string>
+    <string name="grp_appearance">外观</string>
+    <string name="grp_general">常规</string>
+    <string name="grp_trash">回收站</string>
+    <string name="grp_install">安装</string>
+    <string name="grp_bookmark_bar">书签&amp;底栏</string>
+    <string name="grp_external">外置存储</string>
+    <string name="grp_other">其它</string>
+
+    <string name="set_root">请求 Root 权限</string>
+    <string name="set_shell">请求 Shell 权限</string>
+    <string name="set_su">自定义 su 命令</string>
+    <string name="set_start_left">启动路径 - 左窗口</string>
+    <string name="set_start_right">启动路径 - 右窗口</string>
+    <string name="set_autostart">自动启动服务</string>
+    <string name="set_theme">主题颜色</string>
+    <string name="set_follow_system">主题跟随系统</string>
+    <string name="set_launcher">桌面图标</string>
+    <string name="set_name_lines">文件名最大行数</string>
+    <string name="set_hide_perm">文件列表不显示权限</string>
+    <string name="set_datetime">时间日期格式</string>
+    <string name="set_backup">生成备份文件</string>
+    <string name="set_keep_time">保留文件时间</string>
+    <string name="set_favorites">启用输入框收藏功能</string>
+    <string name="set_menu_sort">文件菜单排序</string>
+    <string name="set_lang">语言</string>
+    <string name="set_trash_days">已删除文件保留天数</string>
+    <string name="set_install_allow">允许安装应用</string>
+    <string name="set_bottom_bar">底栏按钮</string>
+    <string name="set_sdcard">存储卡①</string>
+    <string name="set_about">关于 MTM</string>
+
+    <string name="val_on">开</string>
+    <string name="val_off">关</string>
+    <string name="val_home">首页</string>
+    <string name="val_unset">未启用</string>
+    <string name="val_dark">深色</string>
+    <string name="val_light">浅色</string>
+    <string name="val_auto">自动检测</string>
+    <string name="val_follow">跟随系统</string>
+    <string name="val_follow_system">跟随系统</string>
+
+    <!-- 语言 -->
+    <string name="lang_dialog_title">选择语言</string>
+    <string name="lang_zh">简体中文</string>
+    <string name="lang_en">English</string>
+    <string name="val_drag_sort">长按后拖动排序</string>
+    <string name="val_5keys">5 键</string>
+
+    <!-- 对话框默认文案 -->
+    <string name="dlg_save">保存</string>
+    <string name="dlg_delete">删除</string>
+
+    <!-- 对话框群 -->
+    <string name="dlg_new">新建</string>
+    <string name="dlg_rename">重命名</string>
+    <string name="dlg_jump">跳转</string>
+    <string name="dlg_theme">主题颜色</string>
+    <string name="dlg_extract">提取设置</string>
+    <string name="dlg_search">搜索</string>
+    <string name="dlg_name">名称</string>
+    <string name="dlg_file">文件</string>
+    <string name="dlg_folder">文件夹</string>
+    <string name="dlg_paste">粘贴</string>
+    <string name="dlg_include_sub">搜索子目录</string>
+    <string name="dlg_extract_path">存放路径</string>
+    <string name="dlg_name_pattern">命名表达式</string>
+    <string name="dlg_sign_check">开启签名校验</string>
+    <string name="dlg_name_exists">名称已存在</string>
+    <string name="mode_follow">跟随系统</string>
+    <string name="mode_light">浅色</string>
+    <string name="mode_dark">深色</string>
+    <string name="mode_amoled">AMOLED</string>
+
+    <!-- Toast -->
+    <string name="clipboard_copied">已复制到剪贴板</string>
+    <string name="num_dialog_hint">自定义%1$s（%2$d-%3$d）</string>
+    <string name="num_dialog_error">请输入 %1$d-%2$d 之间的整数</string>
+    <string name="browser_selected">已选: %1$d</string>
+    <string name="multi_all">全选</string>
+    <string name="multi_invert">反选</string>
+    <string name="multi_clear">取消选择</string>
+    <string name="multi_cond">条件</string>
+    <string name="multi_tbd">待定</string>
+    <string name="open_with_stub">打开方式（原型未接业务）</string>
 </resources>

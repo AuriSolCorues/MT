@@ -24,6 +24,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MT"
-include(":app")
- 
+rootProject.name = "MTM"
+include(":app", ":core")

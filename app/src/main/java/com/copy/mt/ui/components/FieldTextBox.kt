@@ -1,0 +1,151 @@
+/**
+ * 职责：文本输入与按钮基座——TextActionButton/PrimaryButton、PasswordField（无显隐密码框）、
+ *       FieldTextBox（可掩码、带显隐尾按钮的通用输入框）。
+ * 架构位置：解锁页、编辑页、各弹层统一取用；掩码字符来自 AppSettings.maskChar。
+ * Python 类比：VisualTransformation ≈ 输入框的「显示层变换」——存储值仍是明文，
+ *           仅渲染时逐字符替换（PasswordVisualTransformation 即打点显示，≈ type="password"）。
+ */
+package com.copy.mt.ui.components
+
+import com.copy.mt.R
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.copy.mt.ui.theme.MtTheme
+import com.copy.mt.ui.theme.ThemeMode
+
+/** 文字按钮基座。 */
+@Composable
+internal fun TextActionButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    textColor: Color = Color.Unspecified,
+    textStyle: TextStyle? = null
+) {
+    TextButton(onClick = onClick, modifier = modifier, enabled = enabled) {
+        if (textStyle == null) Text(text, color = textColor) else Text(text, color = textColor, style = textStyle)
+    }
+}
+
+/** 实心主按钮（解锁等主 CTA）；文字/危险按钮见 TextActionButton/DangerButton。 */
+@Composable
+internal fun PrimaryButton(text: String, onClick: () -> Unit, enabled: Boolean = true, modifier: Modifier = Modifier) {
+    Button(onClick = onClick, enabled = enabled, modifier = modifier) { Text(text) }
+}
+
+/** 密码输入；改密等场景可启用显隐尾按钮。 */
+@Composable
+internal fun PasswordField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    showPasswordToggle: Boolean = false
+) {
+    var revealed by remember(showPasswordToggle) { mutableStateOf(false) }
+    OutlinedTextField(
+        value,
+        onValueChange,
+        label = { Text(label) },
+        singleLine = true,
+        visualTransformation = if (showPasswordToggle && revealed) VisualTransformation.None else PasswordVisualTransformation(),
+        trailingIcon = if (showPasswordToggle) {
+            { val label = stringResource(if (revealed) R.string.common_hide else R.string.common_show); TextActionButton(label, onClick = { revealed = !revealed }) }
+        } else null,
+        modifier = modifier
+    )
+}
+
+/** 文本输入基座；隐藏型字段仅追加显隐尾按钮，不提供清空动作。 */
+@Composable
+internal fun FieldTextBox(
+    value: String,
+    onValueChange: (String) -> Unit,
+    hidden: Boolean = false,
+    mask: Char = '•',
+    modifier: Modifier = Modifier,
+    onFocused: () -> Unit = {},
+    textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
+    textColor: Color = MaterialTheme.colorScheme.onSurface
+) {
+    // 显隐态只随 hidden 配置重置；以 value 为键会让打字中已显示的明文塌回掩码。
+    var revealed by remember(hidden) { mutableStateOf(false) }
+    val maskedTransformation = remember(mask) { PasswordVisualTransformation(mask = mask) }
+    val visualTransformation = if (hidden && !revealed) maskedTransformation else VisualTransformation.None
+    // MutableInteractionSource：本组件自持的交互状态源（按下/聚焦），DecorationBox 据此画涟漪与高亮。
+    val interactionSource = remember { MutableInteractionSource() }
+    // 用 BasicTextField + DecorationBox 而非成品 OutlinedTextField：掩码字符、紧凑高度、
+    // 自定义尾按钮都要深度定制，成品组件的可调面不够。
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        singleLine = true,
+        textStyle = textStyle.copy(color = textColor),
+        visualTransformation = visualTransformation,
+        interactionSource = interactionSource,
+        modifier = modifier.height(48.dp).onFocusChanged { if (it.isFocused) onFocused() },
+        decorationBox = { innerTextField ->
+            OutlinedTextFieldDefaults.DecorationBox(
+                value = value,
+                innerTextField = innerTextField,
+                enabled = true,
+                singleLine = true,
+                visualTransformation = visualTransformation,
+                interactionSource = interactionSource,
+                trailingIcon = if (hidden) {
+                    {
+                        TextActionButton(
+                            text = stringResource(if (revealed) R.string.common_hide else R.string.common_show),
+                            onClick = { revealed = !revealed },
+                            textColor = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                } else null,
+                contentPadding = OutlinedTextFieldDefaults.contentPadding(
+                    start = 10.dp,
+                    top = 2.dp,
+                    end = 10.dp,
+                    bottom = 2.dp
+                )
+            )
+        }
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TextActionButtonPreview() {
+    MtTheme(ThemeMode.DARK) {
+        TextActionButton("文字操作", onClick = {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun FieldTextBoxPreview() {
+    MtTheme(ThemeMode.DARK) {
+        FieldTextBox("hunter2", onValueChange = {}, hidden = true)
+    }
+}

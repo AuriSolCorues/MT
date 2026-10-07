@@ -1,0 +1,164 @@
+<resources>
+    <string name="app_name">MTM</string>
+
+    <!-- Common -->
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_save">Save</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_close">Close</string>
+    <string name="common_hide">Hide</string>
+    <string name="common_show">Show</string>
+    <string name="common_back">‹ Back</string>
+
+    <!-- Drawer -->
+    <string name="drawer_subtitle">Not signed in · Prototype 2.6.9</string>
+    <string name="group_storage">Storage</string>
+    <string name="group_bookmarks">Bookmarks</string>
+    <string name="group_tools">Tools</string>
+    <string name="storage_root">Root</string>
+    <string name="storage_internal">Internal storage</string>
+    <string name="storage_usage">%1$s used , %2$s free</string>
+    <string name="tool_trash">Recycle bin</string>
+    <string name="tool_plugins">Plugins</string>
+    <string name="tool_apps">Installed apps</string>
+    <string name="tool_editor">Text editor</string>
+    <string name="tool_more">More tools</string>
+
+    <!-- ⋮ menu -->
+    <string name="menu_refresh">Refresh</string>
+    <string name="menu_search">Search</string>
+    <string name="menu_filter">Filter</string>
+    <string name="menu_sort">Sort by</string>
+    <string name="menu_terminal">Terminal</string>
+    <string name="menu_hidden">Hidden files</string>
+    <string name="menu_bookmark">Add bookmark</string>
+    <string name="menu_set_home">Set home</string>
+    <string name="menu_swap">Swap panes</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_exit">Exit</string>
+
+    <!-- Action panel -->
+    <string name="panel_copy">Copy -&gt;</string>
+    <string name="panel_move">Move -&gt;</string>
+    <string name="panel_delete">Delete</string>
+    <string name="panel_rename">Rename</string>
+    <string name="panel_tools">Tools</string>
+    <string name="panel_zip">Compress</string>
+    <string name="panel_props">Properties</string>
+    <string name="panel_share">Share</string>
+    <string name="panel_open_with">Open with…</string>
+    <string name="panel_bookmark">Add bookmark</string>
+    <string name="panel_tip">Menus with → support long-press for single-pane actions</string>
+
+    <!-- Installed apps -->
+    <string name="apps_title">Installed apps</string>
+    <string name="apps_tab_user">User apps</string>
+    <string name="apps_tab_system">System apps</string>
+    <string name="apps_selected">Selected: %1$d</string>
+    <string name="apps_extract">Extract</string>
+    <string name="apps_uninstall">Uninstall</string>
+    <string name="apps_share">Share</string>
+    <string name="apps_props">Properties</string>
+    <string name="apps_empty">No matching apps</string>
+    <string name="menu_sort_by">Sort by</string>
+    <string name="menu_select_all">Select all</string>
+
+    <!-- Browser -->
+    <string name="browser_stat">Folders: %1$d  Files: %2$d</string>
+    <string name="cd_menu">Menu</string>
+    <string name="cd_more">More</string>
+
+    <!-- Permission -->
+    <string name="perm_title">All files access required</string>
+    <string name="perm_desc">MTM needs storage access to manage files. Please grant all files access in system settings.</string>
+    <string name="perm_grant">Grant</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="grp_startup">Startup</string>
+    <string name="grp_appearance">Appearance</string>
+    <string name="grp_general">General</string>
+    <string name="grp_trash">Recycle bin</string>
+    <string name="grp_install">Install</string>
+    <string name="grp_bookmark_bar">Bookmarks &amp; bottom bar</string>
+    <string name="grp_external">External storage</string>
+    <string name="grp_other">Other</string>
+
+    <string name="set_root">Request root access</string>
+    <string name="set_shell">Request shell access</string>
+    <string name="set_su">Custom su command</string>
+    <string name="set_start_left">Start path - left pane</string>
+    <string name="set_start_right">Start path - right pane</string>
+    <string name="set_autostart">Autostart service</string>
+    <string name="set_theme">Theme color</string>
+    <string name="set_follow_system">Theme follows system</string>
+    <string name="set_launcher">Launcher icon</string>
+    <string name="set_name_lines">Max filename lines</string>
+    <string name="set_hide_perm">Hide permissions in file list</string>
+    <string name="set_datetime">Date &amp; time format</string>
+    <string name="set_backup">Create backup files</string>
+    <string name="set_keep_time">Preserve file times</string>
+    <string name="set_favorites">Enable input favorites</string>
+    <string name="set_menu_sort">File menu sorting</string>
+    <string name="set_lang">Language</string>
+    <string name="set_trash_days">Keep deleted files (days)</string>
+    <string name="set_install_allow">Allow installing apps</string>
+    <string name="set_bottom_bar">Bottom bar buttons</string>
+    <string name="set_sdcard">SD card ①</string>
+    <string name="set_about">About MTM</string>
+
+    <string name="val_on">On</string>
+    <string name="val_off">Off</string>
+    <string name="val_home">Home</string>
+    <string name="val_unset">Not enabled</string>
+    <string name="val_dark">Dark</string>
+    <string name="val_light">Light</string>
+    <string name="val_auto">Auto-detect</string>
+    <string name="val_follow">Follow system</string>
+    <string name="val_follow_system">Follow system</string>
+
+    <!-- Language -->
+    <string name="lang_dialog_title">Select language</string>
+    <string name="lang_zh">Chinese (Simplified)</string>
+    <string name="lang_en">English</string>
+    <string name="val_drag_sort">Long-press then drag</string>
+    <string name="val_5keys">5 keys</string>
+
+    <!-- Dialog defaults -->
+    <string name="dlg_save">Save</string>
+    <string name="dlg_delete">Delete</string>
+
+    <!-- Dialogs -->
+    <string name="dlg_new">New</string>
+    <string name="dlg_rename">Rename</string>
+    <string name="dlg_jump">Jump</string>
+    <string name="dlg_theme">Theme color</string>
+    <string name="dlg_extract">Extract settings</string>
+    <string name="dlg_search">Search</string>
+    <string name="dlg_name">Name</string>
+    <string name="dlg_file">File</string>
+    <string name="dlg_folder">Folder</string>
+    <string name="dlg_paste">Paste</string>
+    <string name="dlg_include_sub">Search subdirectories</string>
+    <string name="dlg_extract_path">Storage path</string>
+    <string name="dlg_name_pattern">Name pattern</string>
+    <string name="dlg_sign_check">Signature verification</string>
+    <string name="dlg_name_exists">Name already exists</string>
+    <string name="mode_follow">Follow system</string>
+    <string name="mode_light">Light</string>
+    <string name="mode_dark">Dark</string>
+    <string name="mode_amoled">AMOLED</string>
+
+    <!-- Toast -->
+    <string name="clipboard_copied">Copied to clipboard</string>
+    <string name="num_dialog_hint">Custom %1$s (%2$d-%3$d)</string>
+    <string name="num_dialog_error">Enter an integer between %1$d and %2$d</string>
+    <string name="browser_selected">Selected: %1$d</string>
+    <string name="multi_all">All</string>
+    <string name="multi_invert">Invert</string>
+    <string name="multi_clear">Clear</string>
+    <string name="multi_cond">Filter</string>
+    <string name="multi_tbd">TBD</string>
+    <string name="open_with_stub">Open with (stub)</string>
+</resources>
