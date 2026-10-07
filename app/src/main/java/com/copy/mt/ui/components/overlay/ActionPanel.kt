@@ -33,9 +33,9 @@ data class PanelItem(val id: String, val label: String, val glyph: String = "", 
 
 /** 面板 10 项（默认）。 */
 @Composable
-fun DefaultPanelItems(): List<PanelItem> = listOf(
-    PanelItem("copy", stringResource(R.string.panel_copy), MtIcons.chromeGlyph(MtIconId.PANEL_COPY), arrow = true),
-    PanelItem("move", stringResource(R.string.panel_move), MtIcons.chromeGlyph(MtIconId.PANEL_MOVE), arrow = true),
+fun DefaultPanelItems(leftArrow: Boolean = false): List<PanelItem> = listOf(
+    PanelItem("copy", stringResource(R.string.panel_copy).let { if (leftArrow) it.replace("->","<-") else it }, MtIcons.chromeGlyph(MtIconId.PANEL_COPY), arrow = true),
+    PanelItem("move", stringResource(R.string.panel_move).let { if (leftArrow) it.replace("->","<-") else it }, MtIcons.chromeGlyph(MtIconId.PANEL_MOVE), arrow = true),
     PanelItem("delete", stringResource(R.string.panel_delete), MtIcons.chromeGlyph(MtIconId.PANEL_DELETE)),
     PanelItem("rename", stringResource(R.string.panel_rename), MtIcons.chromeGlyph(MtIconId.PANEL_RENAME)),
     PanelItem("tools", stringResource(R.string.panel_tools), MtIcons.chromeGlyph(MtIconId.PANEL_TOOLS)),

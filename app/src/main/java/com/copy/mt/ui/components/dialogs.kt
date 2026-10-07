@@ -60,10 +60,11 @@ fun NewEntryDialog(
     onCreateFolder: (String) -> Unit,
     onCreateFile: (String) -> Unit,
     onDismiss: () -> Unit,
+    title: String = stringResource(R.string.dlg_new),
 ) {
     var name by remember { mutableStateOf("") }
     val valid = name.isNotBlank()
-    MtDialog(title = stringResource(R.string.dlg_new), onDismiss = onDismiss) {
+    MtDialog(title = title, onDismiss = onDismiss) {
         MtTextField(name, { name = it }, hint = stringResource(R.string.dlg_name))
         DialogActions(
             listOf(

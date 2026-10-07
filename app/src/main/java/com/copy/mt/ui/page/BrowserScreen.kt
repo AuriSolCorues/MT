@@ -57,9 +57,11 @@ import com.copy.mt.ui.components.CascadeItem
 import com.copy.mt.ui.components.ShadowEdges
 import com.copy.mt.ui.components.ShadowSide
 import com.copy.mt.ui.components.SwipeSelectBox
+import com.copy.mt.ui.components.swipeSelectRange
 import com.copy.mt.ui.components.SyncCrossfadeIcon
 import com.copy.mt.ui.components.WaterDropRefresh
 import com.copy.mt.ui.components.overlay.ActionPanel
+import com.copy.mt.ui.components.overlay.DefaultPanelItems
 import com.copy.mt.ui.components.overlay.DefaultMenuItems
 import com.copy.mt.ui.components.overlay.DrawerPanel
 import com.copy.mt.ui.components.overlay.MenuPopup
@@ -70,6 +72,7 @@ import com.copy.mt.ui.theme.ThemeMode
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.io.File
 
 private val timeFmt = SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault())
 
@@ -114,10 +117,17 @@ fun BrowserScreen(
     var newEntryOpen by remember { mutableStateOf(false) }
     var multi by remember { mutableStateOf(false) }
     var sel by remember { mutableStateOf(setOf<String>()) }   // key = path + name
+    // 重命名对话框
+    var renameOpen by remember { mutableStateOf(false) }
+    var renameItem by remember { mutableStateOf<FileItem?>(null) }
     // 是否显示隐藏文件（以 . 开头的条目）；默认显示，点击 ⋮ 菜单「隐藏文件」可切换
     var showHidden by remember { mutableStateOf(true) }
 
     val activePane = if (active == Side.LEFT) left else right
+    var firstSwipePosL: Int? by remember { mutableStateOf(null) }
+    var firstSwipePosR: Int? by remember { mutableStateOf(null) }
+    val leftDisplayItems = if (showHidden) left.items else left.items.filter { it.name == ".." || !it.name.startsWith('.') }
+    val rightDisplayItems = if (showHidden) right.items else right.items.filter { it.name == ".." || !it.name.startsWith('.') }
     fun rows(p: PaneState) = p.items
 
     fun selKey(side: Side, item: FileItem) = "${side.name}:${item.path}/${item.name}"
@@ -128,7 +138,30 @@ fun BrowserScreen(
         if (sel.isEmpty()) multi = false
     }
 
-    fun exitMulti() { multi = false; sel = emptySet() }
+    fun exitMulti() { multi = false; sel = emptySet(); firstSwipePosL = null; firstSwipePosR = null }
+
+    fun handleSwipeSelect(side: Side, item: FileItem, index: Int) {
+        val list = if (side == Side.LEFT) leftDisplayItems else rightDisplayItems
+        val selectedIndices = list.mapIndexedNotNull { idx, it ->
+            val key = "${side.name}:${it.path}/${it.name}"
+            if (key in sel) idx else null
+        }.toSet()
+        val firstPos = if (side == Side.LEFT) firstSwipePosL else firstSwipePosR
+        val result = swipeSelectRange(
+            position = index,
+            isSelectionMode = multi,
+            firstSwipePosition = firstPos,
+            selected = selectedIndices,
+        )
+        multi = result.isSelectionMode
+        if (side == Side.LEFT) firstSwipePosL = result.firstSwipePosition else firstSwipePosR = result.firstSwipePosition
+        val newKeys = result.selected.map { idx ->
+            val it = list[idx]
+            "${side.name}:${it.path}/${it.name}"
+        }.toSet()
+        val oldKeysThisSide = sel.filter { it.startsWith("${side.name}:") }.toSet()
+        sel = sel - oldKeysThisSide + newKeys
+    }
 
     // 根目录判定：无「..」即在根（ViewModel.open 仅在非根追加 ..）
     fun isAtRoot(side: Side): Boolean =
@@ -204,11 +237,7 @@ fun BrowserScreen(
                     onLongPress = { side, item ->
                         panelSide = side; panelItem = item
                     },
-                    onSwipeSelect = { side, item ->
-                        multi = true
-                        val k = selKey(side, item)
-                        sel = sel + k
-                    },
+                    onSwipeSelect = { side, item, index -> handleSwipeSelect(side, item, index) },
                     epoch = left.items.hashCode(),
                 )
                 Box(Modifier.width(1.dp).fillMaxSize().background(c.divider))
@@ -232,10 +261,7 @@ fun BrowserScreen(
                     onLongPress = { side, item ->
                         panelSide = side; panelItem = item
                     },
-                    onSwipeSelect = { side, item ->
-                        multi = true
-                        sel = sel + selKey(side, item)
-                    },
+                    onSwipeSelect = { side, item, index -> handleSwipeSelect(side, item, index) },
                     onRefresh = onRefresh,
                     showHidden = showHidden,
                     epoch = right.items.hashCode(),
@@ -305,9 +331,77 @@ fun BrowserScreen(
         // 长按面板（常驻组合，visible 驱动进/出动画；panelItem 仅作显示开关）
         ActionPanel(
             visible = panelItem != null,
-            onAction = { panelItem = null },
+            items = DefaultPanelItems(panelSide == Side.RIGHT),
+            onAction = { item ->
+                panelItem?.let { file ->
+                    when (item.id) {
+                        "copy" -> {
+                            val source = File(file.path)
+                            val targetDir = if (panelSide == Side.LEFT) right.path else left.path
+                            File(targetDir, file.name).let { dest ->
+                                source.copyRecursively(dest, overwrite = true)
+                            }
+                            onRefresh(Side.LEFT)
+                            onRefresh(Side.RIGHT)
+                        }
+                        "move" -> {
+                            val source = File(file.path)
+                            val targetDir = if (panelSide == Side.LEFT) right.path else left.path
+                            File(targetDir, file.name).let { dest ->
+                                source.renameTo(dest)
+                            }
+                            onRefresh(Side.LEFT)
+                            onRefresh(Side.RIGHT)
+                        }
+                        "delete" -> {
+                            File(file.path).deleteRecursively()
+                            onRefresh(Side.LEFT)
+                            onRefresh(Side.RIGHT)
+                        }
+                        "rename" -> {
+                            renameItem = file
+                            renameOpen = true
+                        }
+                    }
+                }
+                panelItem = null
+            },
             onDismiss = { panelItem = null },
         )
+
+        // 重命名对话框（当 panelItem 触发 rename 时打开）
+        if (renameOpen && renameItem != null) {
+            NewEntryDialog(
+                title = "重命名",
+                onCreateFolder = { newName ->
+                    val oldItem = renameItem!!
+                    val parent = File(oldItem.path).parentFile ?: File("/")
+                    val target = File(parent, newName)
+                    if (target.exists()) {
+                        Toast.makeText(context, "已存在同名文件", Toast.LENGTH_SHORT).show()
+                    } else {
+                        File(oldItem.path).renameTo(target)
+                        onRefresh(Side.LEFT)
+                        onRefresh(Side.RIGHT)
+                    }
+                    renameOpen = false
+                },
+                onCreateFile = { newName ->
+                    val oldItem = renameItem!!
+                    val parent = File(oldItem.path).parentFile ?: File("/")
+                    val target = File(parent, newName)
+                    if (target.exists()) {
+                        Toast.makeText(context, "已存在同名文件", Toast.LENGTH_SHORT).show()
+                    } else {
+                        File(oldItem.path).renameTo(target)
+                        onRefresh(Side.LEFT)
+                        onRefresh(Side.RIGHT)
+                    }
+                    renameOpen = false
+                },
+                onDismiss = { renameOpen = false },
+            )
+        }
 
         // 新建对话框
         if (newEntryOpen) {
@@ -377,7 +471,7 @@ private fun FilePane(
     onIconTap: (Side, FileItem) -> Unit,
     onUp: (Side) -> Unit,
     onLongPress: (Side, FileItem) -> Unit,
-    onSwipeSelect: (Side, FileItem) -> Unit,
+    onSwipeSelect: (Side, FileItem, Int) -> Unit,
     onRefresh: (Side) -> Unit,
     epoch: Int,
     showHidden: Boolean,
@@ -407,13 +501,13 @@ private fun FilePane(
         ) {
             LazyColumn(Modifier.fillMaxSize(), state = listState) {
                 itemsIndexed(displayItems, key = { _, it -> it.path + it.name }) { index, item ->
-                    val key = item.path + item.name
+                    val key = "${side.name}:${item.path}/${item.name}"
                     val selected = key in sel
                     CascadeItem(epoch = epoch, index = index) {
                         SwipeSelectBox(
                             selected = selected,
                             enabled = item.name != ".." && !selected,
-                            onSelected = { onSwipeSelect(side, item) },
+                            onSelected = { onSwipeSelect(side, item, index) },
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             MtFileRow(
