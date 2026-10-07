@@ -461,7 +461,7 @@ private fun BottomBar(
                 keys.forEach { id ->
                     Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
                         when (id) {
-                            "sync" -> SyncCrossfadeIcon(active = active)
+                            "sync" -> SyncCrossfadeIcon(active = active, modifier = Modifier.clickable { onNav("sync") })
                             else -> {
                                 val glyph = when (id) {
                                     "back" -> "←"; "forward" -> "→"; "new" -> "＋"; else -> "↑"
